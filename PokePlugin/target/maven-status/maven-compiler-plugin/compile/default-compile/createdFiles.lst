@@ -1,0 +1,6 @@
+com\alan\pokePlugin\managers\CooldownManager.class
+com\alan\pokePlugin\managers\EconomyManager.class
+com\alan\pokePlugin\PokePlugin.class
+com\alan\pokePlugin\commands\PokeCommand.class
+com\alan\pokePlugin\utils\SchedulerUtil.class
+com\alan\pokePlugin\managers\ConfigManager.class
