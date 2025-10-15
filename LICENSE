@@ -1,21 +1,32 @@
-MIT License
 
-Copyright (c) 2025 Atharva
+---
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+### 📄 `CHANGELOG.md`
+```markdown
+# 🧾 PokePlugin Changelog
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## Version 1.0.0 – “The Friendly Poke Update”
+**Release Date:** October 16, 2025
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+### 🚀 Major Features
+- Added `/poke <player>` command  
+- Implemented poke-back notification system  
+- Added 3-hour cooldown to prevent spam  
+- Integrated Vault as soft-depend for economy ($50 per poke)  
+- Full Folia, Paper, Purpur, Bukkit, and Spigot support  
+- Added config.yml for customization  
+- Optimized to run asynchronously on Folia region threads  
+- Added permissions system (`pokeplugin.use`, `pokeplugin.admin`, `pokeplugin.bypass.cooldown`)  
+- Title and chat message support for poke notifications  
+
+### 🛠️ Technical Updates
+- Fully compatible with **Minecraft 1.21.4**  
+- Clean Maven structure using **Paper API** template  
+- Uses `JavaPlugin#getLogger()` for safe logging  
+- No placeholders or unfinished TODOs  
+
+### ✅ Performance
+- Lightweight: <50KB final JAR  
+- Zero runtime reflection  
+- Asynchronous economy checks  
+- Caching system for cooldowns  

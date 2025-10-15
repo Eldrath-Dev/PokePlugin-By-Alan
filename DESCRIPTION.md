@@ -1,74 +1,74 @@
-# PokePlugin - Detailed Description
+# 🫵 PokePlugin – The Friendly Poke Update
 
-## 🎯 What is PokePlugin?
-
-PokePlugin is a nostalgic, lightweight Minecraft server plugin that brings back the classic "poke" feature from early social media platforms like Facebook. It allows players to send fun, interactive notifications to each other, fostering community engagement and lighthearted player interaction.
-
----
-
-## 🌟 Why PokePlugin?
-
-### The Problem
-Modern Minecraft servers often lack simple, fun ways for players to interact outside of chat. While there are messaging systems, they can feel formal or intrusive. Server owners need a way to encourage casual, friendly interactions that don't disrupt gameplay.
-
-### The Solution
-PokePlugin provides a simple, non-intrusive way for players to get each other's attention. Whether it's saying "hello," checking if a friend is active, or just having fun, pokes add a social layer to your server without the complexity of full social media plugins.
+Bring the classic “poke” interaction from early Facebook into Minecraft!  
+**PokePlugin** is a fun, lightweight, economy-integrated plugin that lets players poke each other once every 3 hours — for a small in-game cost.
 
 ---
 
-## 🎮 How It Works
-
-### Basic Flow
-1. **Player initiates**: `/poke PlayerName`
-2. **System checks**:
-   - Is the target online?
-   - Is the poker on cooldown?
-   - Does the poker have enough money?
-3. **Poke executes**:
-   - Target receives chat message
-   - Sound effect plays
-   - Title screen appears (optional)
-   - Money is deducted
-   - Cooldown starts
-4. **Confirmation**: Poker receives success message
-
-### Smart Prevention System
-- **Self-Poke Prevention**: Players can't poke themselves
-- **Offline Protection**: Can't poke players who aren't online
-- **Cooldown System**: Prevents spam (3 hours default)
-- **Economy Balance**: Optional cost creates value and prevents abuse
-- **Permission Control**: Granular control over who can poke
+## 🎮 Gameplay Overview
+Players can use `/poke <player>` to send a playful notification to others.  
+The recipient receives an on-screen message and can poke back immediately.  
+Each poke costs **$50** (configurable) and has a **3-hour cooldown** to prevent spam.
 
 ---
 
-## 💡 Use Cases
-
-### 1. Community Building
-- **Greeting System**: New players can poke staff for help
-- **Friend Notifications**: "Hey, I'm online!" without chat spam
-- **Event Reminders**: Staff can poke players about upcoming events (with bypass permissions)
-
-### 2. Roleplay Servers
-- **Character Interactions**: Non-verbal way to get attention
-- **Shop Notifications**: Shop owners can alert customers
-- **Quest Systems**: NPCs (staff) can poke players for quests
-
-### 3. Economy Servers
-- **Monetization**: Small cost adds to server economy
-- **VIP Benefits**: Bypass permissions as a perk
-- **Trade Alerts**: Traders can poke for attention
-
-### 4. Survival/SMP Servers
-- **Base Visits**: "I'm at your base!" notification
-- **Help Requests**: Quick way to get someone's attention
-- **Social Features**: Adds personality to player interactions
+## ⚙️ Plugin Details
+- **Name:** PokePlugin  
+- **Version:** 1.0  
+- **Group ID:** `com.alan`  
+- **Artifact ID:** `PokePlugin`  
+- **Main Class:** `com.alan.pokePlugin.PokePlugin`  
+- **Authors:** `AlanTheDev`  
+- **Website:** [https://github.com/Eldrath-Dev](https://github.com/Eldrath-Dev)  
+- **Supported Versions:** 1.20.x – 1.21.x  
+- **Supported Platforms:** Bukkit, Spigot, Paper, Purpur, Folia  
+- **Soft Depend:** Vault (for economy)
 
 ---
 
-## 🏗️ Technical Architecture
+## 💰 Economy & Cooldowns
+- Each poke deducts **$50** from the sender (via Vault).  
+- Players can poke again after **3 hours**.  
+- Configurable in `config.yml`.
 
-### Platform Detection System
-PokePlugin uses intelligent runtime detection to identify the server platform:
+---
 
-```java
-Folia Detection → Purpur Detection → Paper Detection → Spigot Detection → Bukkit Fallback
+## 🔔 Notifications
+Players receive:
+- A chat message showing who poked them.  
+- A title/subtitle pop-up.  
+- A sound effect (customizable).
+
+---
+
+## 🧩 Permissions
+| Permission | Description | Default |
+|-------------|-------------|----------|
+| `pokeplugin.use` | Allows use of `/poke` command | true |
+| `pokeplugin.admin` | Reload config | op |
+| `pokeplugin.bypass.cooldown` | Bypass cooldown restriction | op |
+
+---
+
+## 🧠 Developer Notes
+When generating code for this plugin:
+- **Always include fully implemented, complete files.**  
+- **No TODOs, placeholders, or incomplete stubs.**  
+- **Ensure all logic is implemented and functional out-of-the-box.**  
+- **Economy integration must gracefully fail if Vault is missing.**
+
+---
+
+### 📦 Ideal Use
+Perfect for **social servers**, **roleplay worlds**, or **community-based SMPs**  
+where fun interactions matter as much as survival.
+
+---
+
+### 💬 Quote
+> “A little poke never hurt anyone — unless you run out of $50.”
+
+---
+
+### 🧾 License
+MIT License © 2025 **AlanTheDev**
