@@ -1,0 +1,6 @@
+name: PokePlugin
+version: '1'
+main: com.alan.pokePlugin.PokePlugin
+api-version: '1.21'
+authors: [ AlanTheDev ]
+website: https://github.com/Eldrath-Dev
