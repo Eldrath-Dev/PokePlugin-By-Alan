@@ -2,8 +2,7 @@
 
 <div align="center">
 
-![PokePlugin Banner](https://img.shields.io/badge/PokePlugin-v1.0.0-blue?style=for-the-badge)
-![Minecraft](https://img.shields.io/badge/Minecraft-1.20.x--1.21.x-green?style=for-the-badge)
+[![Paper](https://img.shields.io/badge/Paper-1.20.x--1.21.x-blue.svg)](https://papermc.io) [![Spigot](https://img.shields.io/badge/Spigot-1.20.x--1.21.x-orange.svg)](https://www.spigotmc.org) [![Purpur](https://img.shields.io/badge/Purpur-1.20.x--1.21.x-purple.svg)](https://purpurmc.org) [![Bukkit](https://img.shields.io/badge/Bukkit-1.20.x--1.21.x-red.svg)](https://bukkit.org) [![Folia](https://img.shields.io/badge/Folia-1.20.x--1.21.x-green.svg)](https://papermc.io/downloads/folia)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 **Bring back the nostalgic "poke" feature to your Minecraft server!**
