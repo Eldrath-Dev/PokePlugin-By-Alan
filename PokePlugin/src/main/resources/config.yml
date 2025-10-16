@@ -1,39 +1,59 @@
-# PokePlugin Configuration
-# Cost in server currency to poke someone
-poke-cost: 50
+# PokePlugin v2.0 Configuration
+# Public Brand: PokeNotify
+# Author: AlanTheDev
 
-# Cooldown in hours between pokes
-cooldown-hours: 3
-
-# Message Configuration
-messages:
-  no-balance: "§cYou need $%cost% to poke someone!"
-  cooldown: "§eYou must wait §c%time% §ebefore poking again!"
-  poked: "§bYou've been poked by §e%player%§b!"
-  poke-success: "§aYou poked §e%target% §asuccessfully!"
-  player-not-found: "§cThat player is not online!"
-  self-poke: "§cYou can't poke yourself!"
-  no-economy: "§cEconomy system not found! Pokes are free."
-  reload-success: "§aPokePlugin configuration reloaded successfully!"
-  no-permission: "§cYou don't have permission to use this command!"
-
-# Notification Settings
-notifications:
-  # Show title/subtitle when poked
-  title: true
-  # Play sound when poked
-  sound: true
-  # Sound to play (ENTITY_EXPERIENCE_ORB_PICKUP, BLOCK_NOTE_BLOCK_PLING, etc.)
-  sound-type: ENTITY_EXPERIENCE_ORB_PICKUP
-  # Sound volume (0.0 - 1.0)
+poke:
+  # Sound to play when poked
+  sound: ENTITY_EXPERIENCE_ORB_PICKUP
   sound-volume: 1.0
-  # Sound pitch (0.5 - 2.0)
   sound-pitch: 1.0
 
-# Title Configuration (if notifications.title is true)
-title:
-  main: "§b§lPOKED!"
-  subtitle: "§eby %player%"
-  fade-in: 10
-  stay: 40
-  fade-out: 10
+  # Title shown when poked
+  title:
+    enabled: true
+    main: "&aYou've been poked!"
+    subtitle: "&eby {player}"
+    fade-in: 10
+    stay: 40
+    fade-out: 10
+
+  # Cooldown between pokes (in hours)
+  cooldown: 3
+
+  # Cost per poke (requires Vault)
+  cost: 50
+
+  # Allow admins to bypass privacy settings with /poke @a
+  admin-bypass: true
+
+database:
+  # Database type (sqlite only for now)
+  type: sqlite
+  # Database file location (relative to plugin folder)
+  file: data/pokedata.db
+
+privacy:
+  # Default privacy mode for new players
+  # Options: ALLOW_ALL, DISABLED, CUSTOM
+  default-mode: ALLOW_ALL
+
+placeholders:
+  # Enable PlaceholderAPI integration
+  enabled: true
+
+gui:
+  # Enable GUI-based settings menu
+  enabled: true
+  # GUI title
+  title: "&aPoke Settings"
+  # GUI size (must be multiple of 9)
+  size: 27
+
+metrics:
+  # Enable bStats metrics (anonymous usage statistics)
+  # Plugin ID: 27606
+  enabled: true
+
+economy:
+  # Enable economy integration (requires Vault)
+  enabled: true

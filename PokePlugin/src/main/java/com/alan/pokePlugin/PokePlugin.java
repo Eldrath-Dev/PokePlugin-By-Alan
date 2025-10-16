@@ -1,24 +1,26 @@
 package com.alan.pokePlugin;
 
 import com.alan.pokePlugin.commands.PokeCommand;
-import com.alan.pokePlugin.managers.ConfigManager;
-import com.alan.pokePlugin.managers.CooldownManager;
-import com.alan.pokePlugin.managers.EconomyManager;
+import com.alan.pokePlugin.managers.*;
+import com.alan.pokePlugin.placeholders.PokePlaceholderExpansion;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class PokePlugin extends JavaPlugin {
+public class PokePlugin extends JavaPlugin implements Listener {
 
     private static PokePlugin instance;
     private ConfigManager configManager;
     private CooldownManager cooldownManager;
     private EconomyManager economyManager;
-
-    private boolean isFolia = false;
-    private boolean isPaper = false;
-    private boolean isPurpur = false;
-    private boolean isSpigot = false;
-    private String serverType = "Unknown";
+    private DatabaseManager databaseManager;
+    private PrivacyManager privacyManager;
+    private MessageManager messageManager;
+    private boolean isFolia;
+    private String serverType;
 
     @Override
     public void onEnable() {
@@ -29,6 +31,13 @@ public class PokePlugin extends JavaPlugin {
         configManager = new ConfigManager(this);
         configManager.loadConfig();
 
+        messageManager = new MessageManager(this);
+
+        databaseManager = new DatabaseManager(this);
+        databaseManager.initialize().join();
+
+        privacyManager = new PrivacyManager(this);
+
         cooldownManager = new CooldownManager(this);
         cooldownManager.loadCooldowns();
 
@@ -36,6 +45,10 @@ public class PokePlugin extends JavaPlugin {
         economyManager.setupEconomy();
 
         registerCommands();
+        registerListeners();
+
+        setupPlaceholderAPI();
+        setupMetrics();
 
         logStartupInfo();
     }
@@ -45,64 +58,50 @@ public class PokePlugin extends JavaPlugin {
         if (cooldownManager != null) {
             cooldownManager.saveCooldowns();
         }
+        if (databaseManager != null) {
+            databaseManager.close();
+        }
         getLogger().info("PokePlugin has been disabled!");
     }
 
     private void detectServerPlatform() {
-        // Check for Folia first (most specific)
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
             isFolia = true;
             serverType = "Folia";
-            getLogger().info("Detected Folia server - using regionized task scheduler");
             return;
         } catch (ClassNotFoundException ignored) {
         }
 
-        // Check for Purpur
         try {
             Class.forName("org.purpurmc.purpur.PurpurConfig");
-            isPurpur = true;
-            isPaper = true; // Purpur extends Paper
             serverType = "Purpur";
-            getLogger().info("Detected Purpur server");
             return;
         } catch (ClassNotFoundException ignored) {
         }
 
-        // Check for Paper
         try {
             Class.forName("com.destroystokyo.paper.PaperConfig");
-            isPaper = true;
             serverType = "Paper";
-            getLogger().info("Detected Paper server");
             return;
         } catch (ClassNotFoundException ignored) {
         }
 
-        // Check for modern Paper (1.19+)
         try {
             Class.forName("io.papermc.paper.configuration.Configuration");
-            isPaper = true;
             serverType = "Paper";
-            getLogger().info("Detected Paper server (modern)");
             return;
         } catch (ClassNotFoundException ignored) {
         }
 
-        // Check for Spigot
         try {
             Class.forName("org.spigotmc.SpigotConfig");
-            isSpigot = true;
             serverType = "Spigot";
-            getLogger().info("Detected Spigot server");
             return;
         } catch (ClassNotFoundException ignored) {
         }
 
-        // Fallback to Bukkit
         serverType = "Bukkit";
-        getLogger().info("Detected Bukkit server (or unknown variant)");
     }
 
     private void registerCommands() {
@@ -111,24 +110,65 @@ public class PokePlugin extends JavaPlugin {
         getCommand("poke").setTabCompleter(pokeCommand);
     }
 
+    private void registerListeners() {
+        Bukkit.getPluginManager().registerEvents(this, this);
+    }
+
+    private void setupPlaceholderAPI() {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            if (configManager.getConfig().getBoolean("placeholders.enabled", true)) {
+                new PokePlaceholderExpansion(this).register();
+                getLogger().info("PlaceholderAPI hook registered successfully!");
+            }
+        }
+    }
+
+    private void setupMetrics() {
+        if (configManager.getConfig().getBoolean("metrics.enabled", true)) {
+            new Metrics(this, 27606);
+            getLogger().info("bStats metrics enabled (ID: 27606)");
+        }
+    }
+
     private void logStartupInfo() {
-        getLogger().info("╔════════════════════════════════════════╗");
-        getLogger().info("║      PokePlugin v" + getDescription().getVersion() + " Enabled      ║");
-        getLogger().info("╠════════════════════════════════════════╣");
-        getLogger().info("║ Server Type: " + String.format("%-26s", serverType) + "║");
-        getLogger().info("║ Server Version: " + String.format("%-23s", Bukkit.getVersion().split("-")[0]) + "║");
-        getLogger().info("║ Economy: " + String.format("%-29s", (economyManager.isEconomyEnabled() ? "Enabled (Vault)" : "Disabled")) + "║");
-        getLogger().info("║ Folia Mode: " + String.format("%-26s", (isFolia ? "Active" : "Inactive")) + "║");
-        getLogger().info("╚════════════════════════════════════════╝");
+        String version = Bukkit.getVersion().split("-")[0];
+        boolean economyEnabled = economyManager.isEconomyEnabled();
+        boolean metricsEnabled = configManager.getConfig().getBoolean("metrics.enabled", true);
+
+        getLogger().info("╔══════════════════════════════════════════════════╗");
+        getLogger().info(String.format("║               PokePlugin v%-23s║", getDescription().getVersion()));
+        getLogger().info("╠══════════════════════════════════════════════════╣");
+        getLogger().info(String.format("║ Server Type: %-40s║", serverType));
+        getLogger().info(String.format("║ Server Version: %-37s║", version));
+        getLogger().info(String.format("║ Economy: %-44s║", (economyEnabled ? "Enabled (Vault)" : "Disabled")));
+        getLogger().info(String.format("║ Metrics: %-44s║", (metricsEnabled ? "Enabled (bStats ID 27606)" : "Disabled")));
+        getLogger().info("╚══════════════════════════════════════════════════╝");
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getView().getTitle().contains("Poke Settings")) {
+            event.setCancelled(true);
+            if (event.getWhoClicked() instanceof org.bukkit.entity.Player player) {
+                com.alan.pokePlugin.gui.PokeSettingsGUI gui = new com.alan.pokePlugin.gui.PokeSettingsGUI(this, player);
+                gui.handleClick(event.getSlot());
+            }
+        } else if (event.getView().getTitle().contains("Blocked Players")) {
+            event.setCancelled(true);
+            if (event.getWhoClicked() instanceof org.bukkit.entity.Player player) {
+                com.alan.pokePlugin.gui.BlockedPlayersGUI gui = new com.alan.pokePlugin.gui.BlockedPlayersGUI(this, player);
+                gui.handleClick(event.getSlot(), event.getCurrentItem());
+            }
+        }
     }
 
     public void reload() {
         configManager.loadConfig();
+        messageManager.reloadMessages();
         cooldownManager.saveCooldowns();
         cooldownManager.loadCooldowns();
     }
 
-    // Getters
     public static PokePlugin getInstance() {
         return instance;
     }
@@ -145,20 +185,20 @@ public class PokePlugin extends JavaPlugin {
         return economyManager;
     }
 
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
+    public PrivacyManager getPrivacyManager() {
+        return privacyManager;
+    }
+
+    public MessageManager getMessageManager() {
+        return messageManager;
+    }
+
     public boolean isFolia() {
         return isFolia;
-    }
-
-    public boolean isPaper() {
-        return isPaper;
-    }
-
-    public boolean isPurpur() {
-        return isPurpur;
-    }
-
-    public boolean isSpigot() {
-        return isSpigot;
     }
 
     public String getServerType() {

@@ -1,6 +1,13 @@
 C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\managers\CooldownManager.java
-C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\commands\PokeCommand.java
 C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\PokePlugin.java
+C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\managers\MessageManager.java
+C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\enums\PrivacyMode.java
+C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\managers\DatabaseManager.java
+C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\commands\PokeCommand.java
+C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\managers\PrivacyManager.java
 C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\managers\ConfigManager.java
 C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\managers\EconomyManager.java
+C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\placeholders\PokePlaceholderExpansion.java
 C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\utils\SchedulerUtil.java
+C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\gui\PokeSettingsGUI.java
+C:\Users\omcha\OneDrive\Documents\GitHub\PokePlugin-By-Alan\PokePlugin\src\main\java\com\alan\pokePlugin\gui\BlockedPlayersGUI.java

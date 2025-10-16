@@ -4,26 +4,32 @@ main: com.alan.pokePlugin.PokePlugin
 api-version: '1.20'
 author: AlanTheDev
 website: https://github.com/Eldrath-Dev
-description: Nostalgic poke feature for Minecraft servers (1.20.x - 1.21.x)
-softdepend: [Vault]
+description: Enhanced poke notification system for Minecraft servers
+softdepend: [Vault, PlaceholderAPI]
 folia-supported: true
 
 commands:
   poke:
-    description: Poke another player
-    usage: /<command> <player> | /<command> reload
-    permission: poke.use
+    description: Poke another player or manage settings
+    usage: /<command> <player|@a|settings|allow|disable|block|unblock|reload>
+    permission: pokeplugin.use
 
 permissions:
-  poke.use:
+  pokeplugin.use:
     description: Allows the use of /poke command
     default: true
-  poke.bypass.cooldown:
+  pokeplugin.settings:
+    description: Allows access to poke settings GUI
+    default: true
+  pokeplugin.admin:
+    description: Allows admin features like /poke @a
+    default: op
+  pokeplugin.bypass.cooldown:
     description: Bypass poke cooldown
     default: op
-  poke.bypass.cost:
+  pokeplugin.bypass.cost:
     description: Bypass poke cost
     default: op
-  poke.reload:
-    description: Reload the plugin configuration
+  pokeplugin.reload:
+    description: Reload plugin configuration
     default: op

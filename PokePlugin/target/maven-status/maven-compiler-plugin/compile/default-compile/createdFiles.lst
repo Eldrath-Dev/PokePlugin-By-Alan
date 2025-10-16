@@ -1,6 +1,13 @@
 com\alan\pokePlugin\managers\CooldownManager.class
+com\alan\pokePlugin\gui\PokeSettingsGUI.class
+com\alan\pokePlugin\commands\PokeCommand.class
+com\alan\pokePlugin\managers\DatabaseManager.class
+com\alan\pokePlugin\utils\SchedulerUtil.class
+com\alan\pokePlugin\enums\PrivacyMode.class
+com\alan\pokePlugin\managers\ConfigManager.class
+com\alan\pokePlugin\gui\BlockedPlayersGUI.class
 com\alan\pokePlugin\managers\EconomyManager.class
 com\alan\pokePlugin\PokePlugin.class
-com\alan\pokePlugin\commands\PokeCommand.class
-com\alan\pokePlugin\utils\SchedulerUtil.class
-com\alan\pokePlugin\managers\ConfigManager.class
+com\alan\pokePlugin\managers\MessageManager.class
+com\alan\pokePlugin\managers\PrivacyManager.class
+com\alan\pokePlugin\placeholders\PokePlaceholderExpansion.class

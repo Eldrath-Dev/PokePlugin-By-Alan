@@ -1,0 +1,60 @@
+# PokePlugin v2.0 Messages
+# Supports color codes: & or §
+# Placeholders: {player}, {target}, {cost}, {time}
+
+poke:
+  sent: "&aYou poked &e{target}&a!"
+  received: "&e{player} &ahas poked you!"
+  disabled: "&cThat player has disabled pokes."
+  blocked: "&cYou are blocked from poking &e{target}&c."
+  blocked-you: "&c{player} tried to poke you but is blocked."
+  all-poked: "&aYou have poked everyone online!"
+  self-poke: "&cYou can't poke yourself!"
+  player-not-found: "&cThat player is not online!"
+  no-permission: "&cYou don't have permission to use this command!"
+  cooldown: "&eYou must wait &c{time} &ebefore poking again!"
+  no-balance: "&cYou need ${cost} to poke someone!"
+
+settings:
+  title: "&aPoke Settings"
+  allow: "&aAllow All Pokes"
+  disable: "&cDisable All Pokes"
+  blocked-players: "&eBlocked Players"
+  mode-changed: "&aYour poke privacy mode has been changed to: &e{mode}"
+
+privacy:
+  blocked: "&aYou have blocked &e{target} &afrom poking you."
+  unblocked: "&aYou have unblocked &e{target}&a."
+  already-blocked: "&c{target} is already blocked."
+  not-blocked: "&c{target} is not blocked."
+  block-self: "&cYou can't block yourself!"
+
+admin:
+  poke-all: "&aYou have poked all online players!"
+  reload: "&aPokePlugin configuration reloaded successfully!"
+
+gui:
+  allow-all-lore:
+    - "&7Click to allow pokes from everyone"
+    - ""
+    - "&eCurrent: {status}"
+
+  disable-all-lore:
+    - "&7Click to disable all pokes"
+    - ""
+    - "&eCurrent: {status}"
+
+  blocked-players-lore:
+    - "&7Click to manage blocked players"
+    - ""
+    - "&eBlocked: {count}"
+
+  unblock-lore:
+    - "&7Click to unblock this player"
+
+  back: "&cBack"
+  close: "&cClose"
+
+errors:
+  database: "&cDatabase error occurred. Please contact an administrator."
+  command-usage: "&cUsage: /poke <player|@a|settings|allow|disable|block|unblock|reload>"
