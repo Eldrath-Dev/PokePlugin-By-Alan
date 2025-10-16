@@ -18,7 +18,6 @@ import org.bukkit.entity.Player;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class PokeCommand implements CommandExecutor, TabCompleter {
@@ -66,20 +65,55 @@ public class PokeCommand implements CommandExecutor, TabCompleter {
                 player.sendMessage(messageManager.getMessage("poke.no-permission"));
                 return true;
             }
-            new PokeSettingsGUI(plugin, player).open();
+
+            if (!configManager.getConfig().getBoolean("gui.enabled", true)) {
+                player.sendMessage("§cGUI is disabled in config!");
+                return true;
+            }
+
+            // Platform-aware GUI opening
+            if (plugin.isFolia()) {
+                // FOLIA: Schedule on player's region
+                player.getScheduler().run(plugin, task -> {
+                    try {
+                        new PokeSettingsGUI(plugin, player).open();
+                        plugin.getLogger().info("[Folia] Opening settings GUI for player: " + player.getName());
+                    } catch (Exception e) {
+                        plugin.getLogger().severe("[Folia] Error opening settings GUI: " + e.getMessage());
+                        e.printStackTrace();
+                        player.sendMessage("§cAn error occurred while opening the settings GUI.");
+                    }
+                }, null);
+            } else {
+                // BUKKIT/SPIGOT/PAPER/PURPUR: Schedule on main thread
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    try {
+                        new PokeSettingsGUI(plugin, player).open();
+                        plugin.getLogger().info("[Bukkit] Opening settings GUI for player: " + player.getName());
+                    } catch (Exception e) {
+                        plugin.getLogger().severe("[Bukkit] Error opening settings GUI: " + e.getMessage());
+                        e.printStackTrace();
+                        player.sendMessage("§cAn error occurred while opening the settings GUI.");
+                    }
+                });
+            }
             return true;
         }
 
         if (args[0].equalsIgnoreCase("allow")) {
             privacyManager.setPrivacyMode(player.getUniqueId(), PrivacyMode.ALLOW_ALL).thenRun(() -> {
-                player.sendMessage(messageManager.formatMessage("settings.mode-changed", "mode", "Allow All"));
+                runPlayerTask(player, () -> {
+                    player.sendMessage(messageManager.formatMessage("settings.mode-changed", "mode", "Allow All"));
+                });
             });
             return true;
         }
 
         if (args[0].equalsIgnoreCase("disable")) {
             privacyManager.setPrivacyMode(player.getUniqueId(), PrivacyMode.DISABLED).thenRun(() -> {
-                player.sendMessage(messageManager.formatMessage("settings.mode-changed", "mode", "Disabled"));
+                runPlayerTask(player, () -> {
+                    player.sendMessage(messageManager.formatMessage("settings.mode-changed", "mode", "Disabled"));
+                });
             });
             return true;
         }
@@ -99,7 +133,9 @@ public class PokeCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
             privacyManager.blockPlayer(player.getUniqueId(), target.getUniqueId()).thenRun(() -> {
-                player.sendMessage(messageManager.formatMessage("privacy.blocked", "target", target.getName()));
+                runPlayerTask(player, () -> {
+                    player.sendMessage(messageManager.formatMessage("privacy.blocked", "target", target.getName()));
+                });
             });
             return true;
         }
@@ -115,12 +151,16 @@ public class PokeCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
             privacyManager.isBlocked(player.getUniqueId(), target.getUniqueId()).thenAccept(isBlocked -> {
-                if (!isBlocked) {
-                    player.sendMessage(messageManager.formatMessage("privacy.not-blocked", "target", target.getName()));
-                    return;
-                }
-                privacyManager.unblockPlayer(player.getUniqueId(), target.getUniqueId()).thenRun(() -> {
-                    player.sendMessage(messageManager.formatMessage("privacy.unblocked", "target", target.getName()));
+                runPlayerTask(player, () -> {
+                    if (!isBlocked) {
+                        player.sendMessage(messageManager.formatMessage("privacy.not-blocked", "target", target.getName()));
+                        return;
+                    }
+                    privacyManager.unblockPlayer(player.getUniqueId(), target.getUniqueId()).thenRun(() -> {
+                        runPlayerTask(player, () -> {
+                            player.sendMessage(messageManager.formatMessage("privacy.unblocked", "target", target.getName()));
+                        });
+                    });
                 });
             });
             return true;
@@ -163,30 +203,34 @@ public class PokeCommand implements CommandExecutor, TabCompleter {
         }
 
         privacyManager.canPoke(player.getUniqueId(), target.getUniqueId()).thenAccept(canPoke -> {
-            if (!canPoke) {
-                player.sendMessage(messageManager.formatMessage("poke.disabled", "target", target.getName()));
-                return;
-            }
-
-            privacyManager.isBlocked(target.getUniqueId(), player.getUniqueId()).thenAccept(isBlocked -> {
-                if (isBlocked) {
-                    player.sendMessage(messageManager.formatMessage("poke.blocked", "target", target.getName()));
+            runPlayerTask(player, () -> {
+                if (!canPoke) {
+                    player.sendMessage(messageManager.formatMessage("poke.disabled", "target", target.getName()));
                     return;
                 }
 
-                if (!player.hasPermission("pokeplugin.bypass.cost")) {
-                    double cost = configManager.getConfig().getDouble("poke.cost", 50.0);
-                    if (economyManager.isEconomyEnabled()) {
-                        if (!economyManager.hasBalance(player, cost)) {
-                            player.sendMessage(messageManager.formatMessage("poke.no-balance", "cost", String.valueOf((int) cost)));
+                privacyManager.isBlocked(target.getUniqueId(), player.getUniqueId()).thenAccept(isBlocked -> {
+                    runPlayerTask(player, () -> {
+                        if (isBlocked) {
+                            player.sendMessage(messageManager.formatMessage("poke.blocked", "target", target.getName()));
                             return;
                         }
-                        economyManager.withdraw(player, cost);
-                    }
-                }
 
-                cooldownManager.setCooldown(player.getUniqueId());
-                executePoke(player, target);
+                        if (!player.hasPermission("pokeplugin.bypass.cost")) {
+                            double cost = configManager.getConfig().getDouble("poke.cost", 50.0);
+                            if (economyManager.isEconomyEnabled()) {
+                                if (!economyManager.hasBalance(player, cost)) {
+                                    player.sendMessage(messageManager.formatMessage("poke.no-balance", "cost", String.valueOf((int) cost)));
+                                    return;
+                                }
+                                economyManager.withdraw(player, cost);
+                            }
+                        }
+
+                        cooldownManager.setCooldown(player.getUniqueId());
+                        executePoke(player, target);
+                    });
+                });
             });
         });
 
@@ -203,7 +247,7 @@ public class PokeCommand implements CommandExecutor, TabCompleter {
     }
 
     private void executePoke(Player poker, Player target) {
-        SchedulerUtil.runTask(plugin, target, () -> {
+        runPlayerTask(target, () -> {
             target.sendMessage(messageManager.formatMessage("poke.received", "player", poker.getName()));
 
             if (configManager.getConfig().getBoolean("poke.sound", true)) {
@@ -243,9 +287,22 @@ public class PokeCommand implements CommandExecutor, TabCompleter {
             }
         });
 
-        SchedulerUtil.runTask(plugin, poker, () -> {
+        runPlayerTask(poker, () -> {
             poker.sendMessage(messageManager.formatMessage("poke.sent", "target", target.getName()));
         });
+    }
+
+    /**
+     * Platform-aware task runner for player-specific operations
+     */
+    private void runPlayerTask(Player player, Runnable task) {
+        if (plugin.isFolia()) {
+            // FOLIA: Run on player's region
+            player.getScheduler().run(plugin, scheduledTask -> task.run(), null);
+        } else {
+            // BUKKIT/SPIGOT/PAPER/PURPUR: Run on main thread
+            Bukkit.getScheduler().runTask(plugin, task);
+        }
     }
 
     private String formatTime(long seconds) {

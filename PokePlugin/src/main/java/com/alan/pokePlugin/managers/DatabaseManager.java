@@ -2,6 +2,7 @@ package com.alan.pokePlugin.managers;
 
 import com.alan.pokePlugin.PokePlugin;
 import com.alan.pokePlugin.enums.PrivacyMode;
+import com.alan.pokePlugin.utils.SchedulerUtil;
 
 import java.io.File;
 import java.sql.*;
@@ -23,7 +24,7 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<Void> initialize() {
-        return CompletableFuture.runAsync(() -> {
+        return SchedulerUtil.runDatabaseTaskVoid(plugin, () -> {
             try {
                 if (!databaseFile.getParentFile().exists()) {
                     databaseFile.getParentFile().mkdirs();
@@ -57,7 +58,7 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<PrivacyMode> getPrivacyMode(UUID uuid) {
-        return CompletableFuture.supplyAsync(() -> {
+        return SchedulerUtil.runDatabaseTask(plugin, () -> {
             String query = "SELECT privacy_mode FROM player_settings WHERE uuid = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, uuid.toString());
@@ -77,7 +78,7 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<Void> setPrivacyMode(UUID uuid, PrivacyMode mode) {
-        return CompletableFuture.runAsync(() -> {
+        return SchedulerUtil.runDatabaseTaskVoid(plugin, () -> {
             String upsert = """
                 INSERT INTO player_settings (uuid, privacy_mode) VALUES (?, ?)
                 ON CONFLICT(uuid) DO UPDATE SET privacy_mode = excluded.privacy_mode;
@@ -94,7 +95,7 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<Set<UUID>> getBlockedPlayers(UUID uuid) {
-        return CompletableFuture.supplyAsync(() -> {
+        return SchedulerUtil.runDatabaseTask(plugin, () -> {
             Set<UUID> blocked = new HashSet<>();
             String query = "SELECT blocked_players FROM player_settings WHERE uuid = ?";
 
@@ -122,39 +123,39 @@ public class DatabaseManager {
     }
 
     public CompletableFuture<Void> blockPlayer(UUID uuid, UUID targetUUID) {
-        return CompletableFuture.runAsync(() -> {
-            Set<UUID> blocked = getBlockedPlayers(uuid).join();
+        return getBlockedPlayers(uuid).thenCompose(blocked -> {
             blocked.add(targetUUID);
-            saveBlockedPlayers(uuid, blocked);
+            return saveBlockedPlayers(uuid, blocked);
         });
     }
 
     public CompletableFuture<Void> unblockPlayer(UUID uuid, UUID targetUUID) {
-        return CompletableFuture.runAsync(() -> {
-            Set<UUID> blocked = getBlockedPlayers(uuid).join();
+        return getBlockedPlayers(uuid).thenCompose(blocked -> {
             blocked.remove(targetUUID);
-            saveBlockedPlayers(uuid, blocked);
+            return saveBlockedPlayers(uuid, blocked);
         });
     }
 
-    private void saveBlockedPlayers(UUID uuid, Set<UUID> blocked) {
-        String blockedString = blocked.stream()
-                .map(UUID::toString)
-                .reduce((a, b) -> a + "," + b)
-                .orElse("");
+    private CompletableFuture<Void> saveBlockedPlayers(UUID uuid, Set<UUID> blocked) {
+        return SchedulerUtil.runDatabaseTaskVoid(plugin, () -> {
+            String blockedString = blocked.stream()
+                    .map(UUID::toString)
+                    .reduce((a, b) -> a + "," + b)
+                    .orElse("");
 
-        String upsert = """
-            INSERT INTO player_settings (uuid, blocked_players) VALUES (?, ?)
-            ON CONFLICT(uuid) DO UPDATE SET blocked_players = excluded.blocked_players;
-        """;
+            String upsert = """
+                INSERT INTO player_settings (uuid, blocked_players) VALUES (?, ?)
+                ON CONFLICT(uuid) DO UPDATE SET blocked_players = excluded.blocked_players;
+            """;
 
-        try (PreparedStatement stmt = connection.prepareStatement(upsert)) {
-            stmt.setString(1, uuid.toString());
-            stmt.setString(2, blockedString);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to save blocked players: " + e.getMessage());
-        }
+            try (PreparedStatement stmt = connection.prepareStatement(upsert)) {
+                stmt.setString(1, uuid.toString());
+                stmt.setString(2, blockedString);
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to save blocked players: " + e.getMessage());
+            }
+        });
     }
 
     public void close() {

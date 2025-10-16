@@ -13,7 +13,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 public class BlockedPlayersGUI {
@@ -31,31 +30,50 @@ public class BlockedPlayersGUI {
     }
 
     public void open() {
+        // Fetch blocked players asynchronously
         privacyManager.getBlockedPlayers(player.getUniqueId()).thenAccept(blockedPlayers -> {
-            int size = Math.max(27, ((blockedPlayers.size() / 9) + 1) * 9);
-            Inventory gui = Bukkit.createInventory(null, size, "§eBlocked Players");
 
-            int slot = 0;
-            for (UUID blockedUUID : blockedPlayers) {
-                OfflinePlayer blockedPlayer = Bukkit.getOfflinePlayer(blockedUUID);
-                gui.setItem(slot++, createPlayerHead(blockedPlayer));
+            if (plugin.isFolia()) {
+                // FOLIA: Use entity scheduler to run on player's region
+                player.getScheduler().run(plugin, task -> {
+                    openInventory(blockedPlayers);
+                }, null);
+            } else {
+                // BUKKIT/SPIGOT/PAPER/PURPUR: Use main thread scheduler
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    openInventory(blockedPlayers);
+                });
             }
-
-            gui.setItem(size - 5, createBackItem());
-            gui.setItem(size - 1, createCloseItem());
-
-            player.openInventory(gui);
         });
+    }
+
+    private void openInventory(java.util.Set<UUID> blockedPlayers) {
+        int size = Math.max(27, ((blockedPlayers.size() / 9) + 1) * 9);
+        if (size > 54) size = 54; // Max inventory size
+
+        Inventory gui = Bukkit.createInventory(null, size, "§eBlocked Players");
+
+        int slot = 0;
+        for (UUID blockedUUID : blockedPlayers) {
+            if (slot >= size - 9) break; // Leave room for control buttons
+            OfflinePlayer blockedPlayer = Bukkit.getOfflinePlayer(blockedUUID);
+            gui.setItem(slot++, createPlayerHead(blockedPlayer));
+        }
+
+        gui.setItem(size - 5, createBackItem());
+        gui.setItem(size - 1, createCloseItem());
+
+        player.openInventory(gui);
     }
 
     private ItemStack createPlayerHead(OfflinePlayer blockedPlayer) {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         meta.setOwningPlayer(blockedPlayer);
-        meta.setDisplayName("§e" + blockedPlayer.getName());
+        meta.setDisplayName("§e" + (blockedPlayer.getName() != null ? blockedPlayer.getName() : "Unknown"));
 
         List<String> lore = new ArrayList<>();
-        lore.add(messageManager.getMessage("gui.unblock-lore"));
+        lore.add("§7Click to unblock this player");
         meta.setLore(lore);
 
         item.setItemMeta(meta);
@@ -82,16 +100,42 @@ public class BlockedPlayersGUI {
         int size = player.getOpenInventory().getTopInventory().getSize();
 
         if (slot == size - 5) {
-            new PokeSettingsGUI(plugin, player).open();
+            // Back button clicked
+            if (plugin.isFolia()) {
+                // FOLIA: Run on player's region
+                player.getScheduler().run(plugin, task -> {
+                    new PokeSettingsGUI(plugin, player).open();
+                }, null);
+            } else {
+                // BUKKIT/SPIGOT/PAPER/PURPUR: Run on main thread
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    new PokeSettingsGUI(plugin, player).open();
+                });
+            }
         } else if (slot == size - 1) {
+            // Close button clicked
             player.closeInventory();
         } else if (clickedItem != null && clickedItem.getType() == Material.PLAYER_HEAD) {
+            // Player head clicked - unblock
             SkullMeta meta = (SkullMeta) clickedItem.getItemMeta();
             if (meta.getOwningPlayer() != null) {
                 UUID blockedUUID = meta.getOwningPlayer().getUniqueId();
+                String playerName = meta.getOwningPlayer().getName();
+
                 privacyManager.unblockPlayer(player.getUniqueId(), blockedUUID).thenRun(() -> {
-                    player.sendMessage(messageManager.formatMessage("privacy.unblocked", "target", meta.getOwningPlayer().getName()));
-                    open();
+                    if (plugin.isFolia()) {
+                        // FOLIA: Run on player's region
+                        player.getScheduler().run(plugin, task -> {
+                            player.sendMessage(messageManager.formatMessage("privacy.unblocked", "target", playerName));
+                            open(); // Refresh the GUI
+                        }, null);
+                    } else {
+                        // BUKKIT/SPIGOT/PAPER/PURPUR: Run on main thread
+                        Bukkit.getScheduler().runTask(plugin, () -> {
+                            player.sendMessage(messageManager.formatMessage("privacy.unblocked", "target", playerName));
+                            open(); // Refresh the GUI
+                        });
+                    }
                 });
             }
         }
